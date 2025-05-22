@@ -6,9 +6,20 @@ class KeypadGUI:
         self.root = root
         self.key_handler = key_handler
         self.input_buffer = ""
-        self._create_display()
         self._configure_styles()
         self._build_interface()
+        self.root.bind('<Key>', self._on_physical_key)
+    
+    def _on_physical_key(self, event):
+        key = event.char
+        if key in '0123456789':
+            self.input_buffer += key
+            self._update_display()
+        elif key == '*' or event.keysym in ('BackSpace', 'Delete'):
+            self.input_buffer = self.input_buffer[:-1]
+            self._update_display()
+        elif key == '#' or event.keysym == 'Return':
+            self._process_input()
     
     def _configure_styles(self):
         self.style = ttk.Style()
@@ -76,11 +87,15 @@ class KeypadGUI:
     def _on_key_press(self, key):
         if key == '#':
             self._process_input()
+        elif key == '*':
+            # Borra el último carácter del buffer
+            self.input_buffer = self.input_buffer[:-1]
+            self._update_display()
         else:
             self.input_buffer += key
             self._update_display()
     
-    def _process_input(self):  # ¡Método faltante!
+    def _process_input(self):  
         self.key_handler(self.input_buffer)
         self.input_buffer = ""
         self._update_display()

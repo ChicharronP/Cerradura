@@ -6,7 +6,7 @@ class Application:
     def __init__(self):
         self.root = tk.Tk()
         self.system = KeypadSystem()
-        self.admin_password = "109876" # Clave del administrador
+        self.admin_password = "1234" # Clave del administrador
         self.root.title("Sistema de Control de Acceso")
         self.gui = KeypadGUI(self.root, self._key_handler)
         self.root.after(2000, self._reset_status)
@@ -22,11 +22,13 @@ class Application:
     
     def _handle_system_response(self, message):
         if message == 'access_granted':
-            print("[TERMINAL] Acceso concedido: Clave válida")
+            print(1)
             self.gui.update_status("ACCESO PERMITIDO", '#2ecc71')
+            return True
         elif message == 'access_denied':
-            print("[TERMINAL] Acceso denegado: Clave inválida")
+            print(0)
             self.gui.update_status("ACCESO DENEGADO", '#e74c3c')
+            return False
         elif message == 'admin_mode':
             print("[TERMINAL] Modo administrador activado")
             self.gui.show_admin_panel(
