@@ -1,6 +1,8 @@
 import tkinter as tk
 from app.gui import KeypadGUI
 from app.core import KeypadSystem
+import serial
+import threading
 
 class Application:
     def __init__(self):
@@ -10,7 +12,16 @@ class Application:
         self.root.title("Sistema de Control de Acceso")
         self.gui = KeypadGUI(self.root, self._key_handler)
         self.root.after(2000, self._reset_status)
+        self.arduino = serial.Serial('COM1', 9600)
+        threading.Thread(target=self._leer_serial, daemon=True).start()
     
+    def _leer_serial(self):
+        while True:
+            if serial.Serial.in_waiting:
+               mensaje = self.arduino.readline().decode('utf-8').strip()
+               if mensaje:
+                   print(f"[ARDUINO] {mensaje}")
+
     def _key_handler(self, key_buffer):
         # Verificar si es modo admin
         if key_buffer == self.admin_password:
@@ -24,10 +35,14 @@ class Application:
         if message == 'access_granted':
             print(1)
             self.gui.update_status("ACCESO PERMITIDO", '#2ecc71')
+            self.arduino.reset_input_buffer()
+            self.arduino.write(b'1') # Envia la señal de acceso autorizado al Arduino
             return True
         elif message == 'access_denied':
             print(0)
             self.gui.update_status("ACCESO DENEGADO", '#e74c3c')
+            self.arduino.reset_input_buffer()
+            self.arduino.write(b'0') # Envia la señal de acceso denegado al Arduino
             return False
         elif message == 'admin_mode':
             print("[TERMINAL] Modo administrador activado")
