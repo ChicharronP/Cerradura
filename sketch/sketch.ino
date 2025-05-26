@@ -64,10 +64,15 @@ void loop()
     }
   }
   
+  // En cada ciclo espera a que la computadora envie un 0 o un 1.
+  buscar_respuesta();
 }
 
 void agregar_a_lista(char tecla){
  cadena_caracteres = cadena_caracteres + tecla; 
+ digitalWrite(pin_buzzer, HIGH);
+ delay(20);
+  digitalWrite(pin_buzzer, LOW);
 }
 
 void abrir_puerta()
@@ -108,28 +113,27 @@ void enviar_cadena(String cadena) {
   Serial.println(cadena_caracteres);
 
   // Esperar a recibir respuesta de la computadora
-  char respuesta = '\0';  // Inicializar con un valor que no sea '0' o '1'
-  while (respuesta != '0' && respuesta != '1') {
-    if (Serial.available() > 0) {
-      respuesta = Serial.read();
-    }
+  int si_respondio = buscar_respuesta();  // Inicializar con un valor que no sea '0' o '1'
+  while (si_respondio == 0) {
+    si_respondio = buscar_respuesta();
     delay(10);
   }
   
-  // Leer la respuesta (esperamos un '1' o '0')
-  Serial.print("resputesta ");
-  Serial.println(respuesta);
   
-  // Procesar la respuesta
-  if (respuesta == '1') {
-    contrasena_correcta();
-  } 
-  else if (respuesta == '0') {
-    contrasena_incorrecta();
-  }
-  else {
-   return ;
-  }
   cadena_caracteres = "";
-  delay(100);
+}
+
+// Metodo para ver si hubo una respuesta
+// retorna 1 si encontro una, retorna 0 si no
+int buscar_respuesta(){
+  char respuesta = Serial.read();
+  if (respuesta == '1'){
+    contrasena_correcta();
+    return 1;
+  }
+  else if (respuesta == '0'){
+    contrasena_incorrecta();
+    return 1;
+  }
+  return 0;
 }
